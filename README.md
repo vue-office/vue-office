@@ -2,6 +2,302 @@
 
 [中文](#中文) | [English](#english) | [日本語](#日本語) 
 
+
+<a id="english"></a>
+## English
+
+A Vue component library supporting preview of multiple file types (**docx, excel, pdf, pptx**), compatible with Vue 2/3. Also supports preview in non-Vue frameworks.
+
+[Demo](https://501351981.github.io/vue-office/examples/dist/)
+
+[Using non-Vue frameworks (vanilla JS, React, etc.) or troubleshooting Vue errors](https://501351981.github.io/vue-office/examples/docs/guide/js-preview.html)
+
+### Features
+- All-in-one: Provides online preview solutions for various document types including Word (.docx), PDF, Excel (.xlsx, .xls), and PowerPoint (.pptx)
+- Simple: Just provide the document's src (URL) to complete the document preview
+- Great experience: Selects the best preview solution for each document type, ensuring optimal user experience and performance
+- High performance: Optimized for large data volumes
+
+### Installation
+```shell
+# docx document preview component
+npm install @vue-office/docx vue-demi@0.14.6
+
+# excel document preview component
+npm install @vue-office/excel vue-demi@0.14.6
+
+# pdf document preview component
+npm install @vue-office/pdf vue-demi@0.14.6
+
+# pptx document preview component
+npm install @vue-office/pptx vue-demi@0.14.6
+```
+For Vue 2.6 or below, you also need to install @vue/composition-api
+```shell
+npm install @vue/composition-api
+```
+
+### Usage Examples
+
+Document preview scenarios can be roughly divided into three types:
+- Using a document CDN URL, such as https://***.docx, passing the document URL string to the component's src property
+- Requesting file content through an API, where you can get the file's ArrayBuffer or Blob format data and pass it to the component's src property
+- Previewing during file upload, where you can get the file's ArrayBuffer or Blob format data and pass it to the component's src property
+
+<details>
+<summary>docx file preview examples (examples for all three usage methods)</summary>
+
+**1. Using a network URL for preview**
+```vue
+<template>
+    <vue-office-docx
+        :src="docx"
+        style="height: 100vh;"
+        @rendered="rendered"
+    />
+</template>
+
+<script>
+// Import VueOfficeDocx component
+import VueOfficeDocx from '@vue-office/docx'
+// Import related styles
+import '@vue-office/docx/lib/index.css'
+
+export default {
+    components:{
+        VueOfficeDocx
+    },
+    data(){
+        return {
+            docx: 'http://static.shanhuxueyuan.com/test6.docx' // Set document network address, can be relative
+        }
+    },
+    methods:{
+        rendered(){
+            console.log("Rendering completed")
+        }
+    }
+}
+</script>
+```
+
+**2. Upload file preview**
+
+Reading the file's ArrayBuffer
+```vue
+<template>
+    <div>
+        <input type="file" @change="changeHandle"/>
+        <vue-office-docx :src="src"/>
+    </div>
+</template>
+
+<script>
+import VueOfficeDocx from '@vue-office/docx'
+import '@vue-office/docx/lib/index.css'
+
+export default {
+    components: {
+        VueOfficeDocx
+    },
+    data(){
+        return {
+            src: ''
+        }
+    },
+    methods:{
+        changeHandle(event){
+            let file = event.target.files[0]
+            let fileReader = new FileReader()
+            fileReader.readAsArrayBuffer(file)
+            fileReader.onload =  () => {
+                this.src = fileReader.result
+            }
+        }
+    }
+}
+</script>
+```
+
+**3. Binary file preview**
+
+If the backend provides a POST API that returns a binary stream instead of a CDN URL, you can call the API to get the file's ArrayBuffer data and pass it to the src property.
+
+```vue
+<template>
+    <vue-office-docx
+        :src="docx"
+        style="height: 100vh;"
+        @rendered="rendered"
+    />
+</template>
+
+<script>
+// Import VueOfficeDocx component
+import VueOfficeDocx from '@vue-office/docx'
+// Import related styles
+import '@vue-office/docx/lib/index.css'
+
+export default {
+    components:{
+        VueOfficeDocx
+    },
+    data(){
+        return {
+            docx: ''
+        }
+    },
+    mounted(){
+        fetch('your API file address', {
+            method: 'post'
+        }).then(res=>{
+            // Read the file's arrayBuffer
+            res.arrayBuffer().then(res=>{
+                this.docx = res
+            })
+        })
+    },
+    methods:{
+        rendered(){
+            console.log("Rendering completed")
+        }
+    }
+}
+</script>
+```
+
+</details>
+
+<details>
+<summary>excel file preview examples</summary>
+
+The example of preview via network address is as follows. The preview via file ArrayBuffer is the same as the docx usage above.
+```vue
+<template>
+    <vue-office-excel
+        :src="excel"
+        style="height: 100vh;"
+        @rendered="renderedHandler"
+        @error="errorHandler"
+    />
+</template>
+
+<script>
+// Import VueOfficeExcel component
+import VueOfficeExcel from '@vue-office/excel'
+// Import related styles
+import '@vue-office/excel/lib/index.css'
+
+export default {
+    components: {
+        VueOfficeExcel
+    },
+    data() {
+        return {
+            excel: 'http://static.shanhuxueyuan.com/demo/excel.xlsx' // Set document address
+        }
+    },
+    methods: {
+        renderedHandler() {
+            console.log("Rendering completed")
+        },
+        errorHandler() {
+            console.log("Rendering failed")
+        }
+    }
+}
+</script>
+```
+</details>
+
+<details>
+<summary>pdf file preview examples</summary>
+
+The example of preview via network address is as follows. The preview via file ArrayBuffer is the same as the docx usage above.
+```vue
+<template>
+    <vue-office-pdf
+        :src="pdf"
+        style="height: 100vh"
+        @rendered="renderedHandler"
+        @error="errorHandler"
+    />
+</template>
+
+<script>
+// Import VueOfficePdf component
+import VueOfficePdf from '@vue-office/pdf'
+
+export default {
+    components: {
+        VueOfficePdf
+    },
+    data() {
+        return {
+            pdf: 'http://static.shanhuxueyuan.com/test.pdf' // Set document address
+        }
+    },
+    methods: {
+        renderedHandler() {
+            console.log("Rendering completed")
+        },
+        errorHandler() {
+            console.log("Rendering failed")
+        }
+    }
+}
+</script>
+```
+
+</details>
+
+<details>
+<summary>pptx file preview examples</summary>
+
+The example of preview via network address is as follows. The preview via file ArrayBuffer is the same as the docx usage above.
+```vue
+<template>
+    <vue-office-pptx
+        :src="pdf"
+        style="height: 100vh"
+        @rendered="renderedHandler"
+        @error="errorHandler"
+    />
+</template>
+
+<script>
+import VueOfficePptx from '@vue-office/pptx'
+
+export default {
+    components: {
+        VueOfficePptx
+    },
+    data() {
+        return {
+            pdf: 'http://****/test.pptx' // Set document address
+        }
+    },
+    methods: {
+        renderedHandler() {
+            console.log("Rendering completed")
+        },
+        errorHandler() {
+            console.log("Rendering failed")
+        }
+    }
+}
+</script>
+```
+
+</details>
+
+### Third-party Libraries Dependencies
+
+- docx: Implemented based on the docx-preview library, related issues are not currently being addressed
+- pdf: Implemented based on the pdfjs library, with virtual list implementation for improved performance
+- excel: Implemented based on exceljs and x-data-spreadsheet, with better style support across the web
+- pptx: Implemented based on the self-developed [pptx-preview](https://github.com/501351981/pptx-preview) library, source code available separately for a fee from the author
+
 <a id="中文"></a>
 ## 中文
 
@@ -321,300 +617,7 @@ export default {
 
 小册已售 890+份，收到前端同学的高度评价，对提升日常开发效率和质量，有非常大的帮助。
 
-<a id="english"></a>
-## English
 
-A Vue component library supporting preview of multiple file types (**docx, excel, pdf, pptx**), compatible with Vue 2/3. Also supports preview in non-Vue frameworks.
-
-[Demo](https://501351981.github.io/vue-office/examples/dist/)
-
-[Using non-Vue frameworks (vanilla JS, React, etc.) or troubleshooting Vue errors](https://501351981.github.io/vue-office/examples/docs/guide/js-preview.html)
-
-### Features
-- All-in-one: Provides online preview solutions for various document types including Word (.docx), PDF, Excel (.xlsx, .xls), and PowerPoint (.pptx)
-- Simple: Just provide the document's src (URL) to complete the document preview
-- Great experience: Selects the best preview solution for each document type, ensuring optimal user experience and performance
-- High performance: Optimized for large data volumes
-
-### Installation
-```shell
-# docx document preview component
-npm install @vue-office/docx vue-demi@0.14.6
-
-# excel document preview component
-npm install @vue-office/excel vue-demi@0.14.6
-
-# pdf document preview component
-npm install @vue-office/pdf vue-demi@0.14.6
-
-# pptx document preview component
-npm install @vue-office/pptx vue-demi@0.14.6
-```
-For Vue 2.6 or below, you also need to install @vue/composition-api
-```shell
-npm install @vue/composition-api
-```
-
-### Usage Examples
-
-Document preview scenarios can be roughly divided into three types:
-- Using a document CDN URL, such as https://***.docx, passing the document URL string to the component's src property
-- Requesting file content through an API, where you can get the file's ArrayBuffer or Blob format data and pass it to the component's src property
-- Previewing during file upload, where you can get the file's ArrayBuffer or Blob format data and pass it to the component's src property
-
-<details>
-<summary>docx file preview examples (examples for all three usage methods)</summary>
-
-**1. Using a network URL for preview**
-```vue
-<template>
-    <vue-office-docx
-        :src="docx"
-        style="height: 100vh;"
-        @rendered="rendered"
-    />
-</template>
-
-<script>
-// Import VueOfficeDocx component
-import VueOfficeDocx from '@vue-office/docx'
-// Import related styles
-import '@vue-office/docx/lib/index.css'
-
-export default {
-    components:{
-        VueOfficeDocx
-    },
-    data(){
-        return {
-            docx: 'http://static.shanhuxueyuan.com/test6.docx' // Set document network address, can be relative
-        }
-    },
-    methods:{
-        rendered(){
-            console.log("Rendering completed")
-        }
-    }
-}
-</script>
-```
-
-**2. Upload file preview**
-
-Reading the file's ArrayBuffer
-```vue
-<template>
-    <div>
-        <input type="file" @change="changeHandle"/>
-        <vue-office-docx :src="src"/>
-    </div>
-</template>
-
-<script>
-import VueOfficeDocx from '@vue-office/docx'
-import '@vue-office/docx/lib/index.css'
-
-export default {
-    components: {
-        VueOfficeDocx
-    },
-    data(){
-        return {
-            src: ''
-        }
-    },
-    methods:{
-        changeHandle(event){
-            let file = event.target.files[0]
-            let fileReader = new FileReader()
-            fileReader.readAsArrayBuffer(file)
-            fileReader.onload =  () => {
-                this.src = fileReader.result
-            }
-        }
-    }
-}
-</script>
-```
-
-**3. Binary file preview**
-
-If the backend provides a POST API that returns a binary stream instead of a CDN URL, you can call the API to get the file's ArrayBuffer data and pass it to the src property.
-
-```vue
-<template>
-    <vue-office-docx
-        :src="docx"
-        style="height: 100vh;"
-        @rendered="rendered"
-    />
-</template>
-
-<script>
-// Import VueOfficeDocx component
-import VueOfficeDocx from '@vue-office/docx'
-// Import related styles
-import '@vue-office/docx/lib/index.css'
-
-export default {
-    components:{
-        VueOfficeDocx
-    },
-    data(){
-        return {
-            docx: ''
-        }
-    },
-    mounted(){
-        fetch('your API file address', {
-            method: 'post'
-        }).then(res=>{
-            // Read the file's arrayBuffer
-            res.arrayBuffer().then(res=>{
-                this.docx = res
-            })
-        })
-    },
-    methods:{
-        rendered(){
-            console.log("Rendering completed")
-        }
-    }
-}
-</script>
-```
-
-</details>
-
-<details>
-<summary>excel file preview examples</summary>
-
-The example of preview via network address is as follows. The preview via file ArrayBuffer is the same as the docx usage above.
-```vue
-<template>
-    <vue-office-excel
-        :src="excel"
-        style="height: 100vh;"
-        @rendered="renderedHandler"
-        @error="errorHandler"
-    />
-</template>
-
-<script>
-// Import VueOfficeExcel component
-import VueOfficeExcel from '@vue-office/excel'
-// Import related styles
-import '@vue-office/excel/lib/index.css'
-
-export default {
-    components: {
-        VueOfficeExcel
-    },
-    data() {
-        return {
-            excel: 'http://static.shanhuxueyuan.com/demo/excel.xlsx' // Set document address
-        }
-    },
-    methods: {
-        renderedHandler() {
-            console.log("Rendering completed")
-        },
-        errorHandler() {
-            console.log("Rendering failed")
-        }
-    }
-}
-</script>
-```
-</details>
-
-<details>
-<summary>pdf file preview examples</summary>
-
-The example of preview via network address is as follows. The preview via file ArrayBuffer is the same as the docx usage above.
-```vue
-<template>
-    <vue-office-pdf
-        :src="pdf"
-        style="height: 100vh"
-        @rendered="renderedHandler"
-        @error="errorHandler"
-    />
-</template>
-
-<script>
-// Import VueOfficePdf component
-import VueOfficePdf from '@vue-office/pdf'
-
-export default {
-    components: {
-        VueOfficePdf
-    },
-    data() {
-        return {
-            pdf: 'http://static.shanhuxueyuan.com/test.pdf' // Set document address
-        }
-    },
-    methods: {
-        renderedHandler() {
-            console.log("Rendering completed")
-        },
-        errorHandler() {
-            console.log("Rendering failed")
-        }
-    }
-}
-</script>
-```
-
-</details>
-
-<details>
-<summary>pptx file preview examples</summary>
-
-The example of preview via network address is as follows. The preview via file ArrayBuffer is the same as the docx usage above.
-```vue
-<template>
-    <vue-office-pptx
-        :src="pdf"
-        style="height: 100vh"
-        @rendered="renderedHandler"
-        @error="errorHandler"
-    />
-</template>
-
-<script>
-import VueOfficePptx from '@vue-office/pptx'
-
-export default {
-    components: {
-        VueOfficePptx
-    },
-    data() {
-        return {
-            pdf: 'http://****/test.pptx' // Set document address
-        }
-    },
-    methods: {
-        renderedHandler() {
-            console.log("Rendering completed")
-        },
-        errorHandler() {
-            console.log("Rendering failed")
-        }
-    }
-}
-</script>
-```
-
-</details>
-
-### Third-party Libraries Dependencies
-
-- docx: Implemented based on the docx-preview library, related issues are not currently being addressed
-- pdf: Implemented based on the pdfjs library, with virtual list implementation for improved performance
-- excel: Implemented based on exceljs and x-data-spreadsheet, with better style support across the web
-- pptx: Implemented based on the self-developed [pptx-preview](https://github.com/501351981/pptx-preview) library, source code available separately for a fee from the author
 
 <a id="日本語"></a>
 ## 日本語
